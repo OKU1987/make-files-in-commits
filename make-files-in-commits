@@ -2,8 +2,9 @@
 
 make_files_in_commits()
 {
+    target_commit=$1
     if [[ $# -lt 1 ]]; then
-	return 0
+	target_commit=`git rev-list HEAD | tail -n 1`
     fi
 
     orig_branch=`git symbolic-ref --short HEAD`
@@ -21,7 +22,7 @@ make_files_in_commits()
 
     num_commits=`git log --oneline --no-merges | wc -l`
     makefile_deleted=0
-    while [[ $num_commits != 1 ]]
+    while [[ $num_commits -gt 0 ]]
     do
 	msg_of_make=`make -i 2>&1`
 	if [[ ${msg_of_make#*ERROR} !=  $msg_of_make ]] ||
@@ -31,11 +32,11 @@ make_files_in_commits()
 	fi
 
 	echo $msg_of_make
-	commit_no=`git log --oneline --no-merges -n 1 | cut -f 1 -d ' '`
-	if [[ $1 == $commit_no* ]]; then
+	current_commit=`git log --oneline --no-merges -n 1 | cut -f 1 -d ' '`
+	if [[ $target_commit == $current_commit* ]]; then
 	    break
 	fi
-	if [[ $commit_no == $1* ]]; then
+	if [[ $current_commit == $target_commit* ]]; then
 	    break
 	fi
 
@@ -69,7 +70,3 @@ make_files_in_commits()
 }
 
 make_files_in_commits $1
-
-if [[ $? == 0 ]]; then
-    echo 'A commit ID is required.'
-fi
