@@ -7,10 +7,17 @@ make_files_in_commits()
     fi
 
     orig_branch=`git symbolic-ref --short HEAD`
-    git stash
+    msg_of_stash=`git stash`
+    stashed=1
+    if [[ ${msg_of_stash#*"No local changes to save"} != $msg_of_stash ]]; then
+	stashed=0
+    fi
+    echo -e "$msg_of_stash"
     git checkout -b '(make__files)'
 
-    echo "\nHEAD is now at `git show HEAD --oneline | head -n 1`"
+    if [[ $stashed == 0 ]]; then
+	echo -e "HEAD is now at `git show HEAD --oneline | head -n 1`"
+    fi
 
     num_commits=`git log --oneline --no-merges | wc -l`
     makefile_deleted=0
@@ -53,7 +60,9 @@ make_files_in_commits()
     fi
     git checkout $orig_branch
 
-    git stash pop
+    if [[ $stashed == 1 ]]; then
+	git stash pop
+    fi
     git branch -D '(make__files)'
 
     return 1
