@@ -40,7 +40,7 @@ make_files_in_commits()
 	    break
 	fi
 
-	added_file=`git log --oneline --name-status -n 2 | grep ^A`
+	added_file=`git log --oneline --name-status -n 1 | grep ^A`
 	if [[ ${added_file#*Makefile} != $added_file ]]; then
 	    git rm --cached Makefile > /dev/null
 	    git commit --amend --allow-empty -C HEAD > /dev/null
